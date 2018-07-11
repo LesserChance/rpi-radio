@@ -77,7 +77,7 @@ class Radio:
                     if key == 'd':
                         self.setDial(self.dial_num - 1)
                     if key == 'x':
-                        self.radio_player.exit()
+                        self.exit()
                         sys.exit()
         except KeyboardInterrupt:
             self.exit()

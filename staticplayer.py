@@ -1,6 +1,8 @@
 #!/usr/bin/python
 import subprocess
 
+ASSET_DIR = "./assets/"
+
 class StaticPlayer:
     current_static = None
     sp = None
@@ -22,4 +24,4 @@ class StaticPlayer:
                 self.playStatic(self.current_static)
 
     def playStatic(self, static_file):
-        self.sp = subprocess.Popen(["aplay", "-q", "/home/pi/Projects/Radio/assets/whitenoise-" + str(static_file) + ".wav"])
+        self.sp = subprocess.Popen(["aplay", "-q", ASSET_DIR + "whitenoise-" + str(static_file) + ".wav"])

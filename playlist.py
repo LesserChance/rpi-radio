@@ -5,9 +5,6 @@ class Playlist:
     playlist_name = None
     channels = []
 
-    dial = 0
-    channel = 0
-
     def __init__(self, name):
         self.playlist_name = name
 
@@ -23,9 +20,6 @@ class Playlist:
 
     def getChannelName(self, channel):
         return self.channels[channel]
-
-    def getChannel(self):
-        return self.channel
 
     def getChannelCount(self):
         return len(self.channels)
