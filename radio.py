@@ -1,14 +1,23 @@
 #!/usr/bin/python
 import sys, select, traceback, math
-import mpcplaylistplayer, staticplayer, playlist
+import mpcplaylistplayer, staticplayer, playlist, textscroller, staticled, rotary
 
 PLAYLIST_NAME = 'radio'
 MAX_STATIC = 5
 
+DIAL_GPIO_A = 17
+DIAL_GPIO_B = 18
+
 class Radio:
-    radio_player = None
-    static_player = None
     playlist = None
+    text_scroller = None
+
+    channel = None
+    radio_player = None
+
+    static = None
+    static_led = None
+    static_player = None
 
     dial_num = 0
     dial_channels = [];
@@ -18,6 +27,8 @@ class Radio:
         self.playlist = playlist.Playlist(PLAYLIST_NAME)
         self.radio_player = mpcplaylistplayer.MpcPlaylistPlayer()
         self.static_player = staticplayer.StaticPlayer()
+
+        self.dial = rotary.RotaryEncoder(DIAL_GPIO_A, DIAL_GPIO_B, callback=self.handleDial)
         self.generateDialArrays()
 
     def generateDialArrays(self):
@@ -47,15 +58,45 @@ class Radio:
         self.setDial(0)
 
     def printChannelName(self):
-        print self.playlist.getChannelName(self.channel)
+        station = self.playlist.getChannelName(self.channel)
+        print station
+
+        if (self.text_scroller != None):
+            self.text_scroller.stop()
+
+        self.text_scroller = textscroller.TextScroller(station)
+        self.text_scroller.start()
+
+    def updateChannel(self, channel):
+        prev_channel = self.channel
+        self.channel = channel
+
+        if (prev_channel != self.channel):
+            self.printChannelName()
+
+        self.radio_player.playChannel(self.channel)
+
+    def updateStatic(self, static):
+        prev_static = self.static
+        self.static = static
+        self.runStaticLed()
+        self.static_player.play(self.static)
+
+    def runStaticLed(self):
+        if (self.static_led != None):
+            self.static_led.stop()
+
+        self.static_led = staticled.StaticLed(float(self.static) / MAX_STATIC)
+        self.static_led.start()
+
+    def handleDial(self, delta):
+        if (self.dial_num + delta > 0):
+            self.setDial(self.dial_num + delta)
 
     def setDial(self, dial):
         self.dial_num = dial
-        self.channel = self.dialToChannel(dial)
-        self.static = self.dialToStatic(dial)
-        self.radio_player.playChannel(self.channel)
-        self.static_player.play(self.static)
-        self.printChannelName()
+        self.updateChannel(self.dialToChannel(dial))
+        self.updateStatic(self.dialToStatic(dial))
 
     def dialToChannel(self, dial):
         return self.dial_channels[dial]
@@ -88,6 +129,12 @@ class Radio:
     def exit(self):
         self.radio_player.stop()
         self.static_player.stop()
+
+        if (self.text_scroller != None):
+            self.text_scroller.stop()
+
+        if (self.static_led != None):
+            self.static_led.stop()
 
 if __name__ == '__main__':
     Radio().run()
