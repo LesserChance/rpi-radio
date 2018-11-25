@@ -1,14 +1,30 @@
 #!/usr/bin/python
+import RPi.GPIO as GPIO
 import sys, select, traceback, math
 import mpcplaylistplayer, staticplayer, playlist, textscroller, staticled, rotary
+from threading import Event
+
+GPIO.setmode(GPIO.BCM)
 
 PLAYLIST_NAME = 'radio'
 MAX_STATIC = 5
+MAX_DIAL = 100
 
 DIAL_GPIO_A = 17
 DIAL_GPIO_B = 18
 
+SWITCH_GPIO_OUT = 12
+SWITCH_GPIO_IN = 25
+
+GPIO.setwarnings(False)
+GPIO.setup(SWITCH_GPIO_IN, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+GPIO.setup(SWITCH_GPIO_OUT, GPIO.OUT)
+GPIO.output(SWITCH_GPIO_OUT, GPIO.HIGH)
+
 class Radio:
+    played = False
+    playing = False
+
     playlist = None
     text_scroller = None
 
@@ -31,8 +47,31 @@ class Radio:
         self.dial = rotary.RotaryEncoder(DIAL_GPIO_A, DIAL_GPIO_B, callback=self.handleDial)
         self.generateDialArrays()
 
+    def setPlaying(self, new_playing):
+        if (not self.playing and new_playing):
+            if (not self.played):
+                self.start()
+                self.played = True
+            else:
+                self.runStaticLed()
+                self.printChannelName()
+                self.radio_player.on()
+                self.static_player.on()
+
+
+        elif (self.playing and not new_playing):
+            self.radio_player.off()
+            self.static_player.off()
+
+            if (self.text_scroller != None):
+                self.text_scroller.stop()
+            if (self.static_led != None):
+                self.static_led.stop()
+
+        self.playing = new_playing;
+
     def generateDialArrays(self):
-        spacing = int(255 / self.playlist.getChannelCount())
+        spacing = int(MAX_DIAL / self.playlist.getChannelCount())
         half_spacing = math.ceil(float(spacing) / 2)
         insert_channel = 0
         insert_static = 0
@@ -90,8 +129,13 @@ class Radio:
         self.static_led.start()
 
     def handleDial(self, delta):
-        if (self.dial_num + delta > 0):
-            self.setDial(self.dial_num + delta)
+        if (self.playing):
+            if (self.dial_num + delta > MAX_DIAL):
+                self.setDial(0)
+            elif (self.dial_num + delta > 0):
+                self.setDial(self.dial_num + delta)
+            else:
+                self.setDial(MAX_DIAL)
 
     def setDial(self, dial):
         self.dial_num = dial
@@ -104,22 +148,20 @@ class Radio:
     def dialToStatic(self, dial):
         return self.dial_static[dial]
 
-    def run(self):
-        self.start()
+    def checkSwitch(self, channel):
+        new_playing = GPIO.input(SWITCH_GPIO_IN)
+        if (self.playing != new_playing):
+            self.setPlaying(new_playing)
 
+    def run(self):
+        GPIO.add_event_detect(SWITCH_GPIO_IN,GPIO.RISING,callback=self.checkSwitch)
+        self.checkSwitch(None)
+
+        exit = Event()
         try:
-            timeout = 10
             while True:
-                rlist, _, _ = select.select([sys.stdin], [], [], timeout)
-                if rlist:
-                    key = sys.stdin.readline().replace('\n', '')
-                    if key == 'u':
-                        self.setDial(self.dial_num + 1)
-                    if key == 'd':
-                        self.setDial(self.dial_num - 1)
-                    if key == 'x':
-                        self.exit()
-                        sys.exit()
+                exit.wait(60)
+
         except KeyboardInterrupt:
             self.exit()
         except Exception:

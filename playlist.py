@@ -19,6 +19,10 @@ class Playlist:
         return self.playlist_name
 
     def getChannelName(self, channel):
+        if (channel >= self.getChannelCount()):
+            # handle the backward looping behavior
+            return self.channels[0]
+
         return self.channels[channel]
 
     def getChannelCount(self):

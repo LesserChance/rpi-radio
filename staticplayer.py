@@ -8,7 +8,13 @@ class StaticPlayer:
     sp = None
 
     def __init__(self):
-        self.stop
+        self.stop()
+
+    def on(self):
+        self.forcePlay(self.current_static)
+
+    def off(self):
+        self.stop()
 
     def stop(self):
         try:
@@ -18,6 +24,9 @@ class StaticPlayer:
 
     def play(self, new_static):
         if (new_static != self.current_static):
+            self.forcePlay(new_static)
+
+    def forcePlay(self, new_static):
             self.current_static = new_static
             self.stop()
             if (new_static > 0):

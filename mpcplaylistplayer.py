@@ -8,6 +8,12 @@ class MpcPlaylistPlayer:
     def __init__(self):
         self.stop
 
+    def on(self):
+        self.mpc('toggle')
+
+    def off(self):
+        self.mpc('toggle')
+
     def start(self, playlist):
         self.playlist = playlist
         self.mpc('clear')
@@ -18,6 +24,10 @@ class MpcPlaylistPlayer:
         self.mpc('stop')
 
     def playChannel(self, new_channel):
+        if (new_channel >= self.playlist.getChannelCount()):
+            # handle the backward looping behavior
+            new_channel = 0
+
         new_channel = new_channel + 1 # mpc channels are 1-based
         if (new_channel != self.current_channel):
             self.current_channel = new_channel
