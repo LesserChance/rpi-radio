@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 import shlex, subprocess
 
 class MpcPlaylistPlayer:
@@ -38,5 +38,5 @@ class MpcPlaylistPlayer:
         result = subprocess.check_output(
             shlex.split(cmd), stderr=subprocess.STDOUT
         )
-        result = result.rstrip().split('\n')
+        result = result.decode("utf-8").rstrip().split("\n")
         return result

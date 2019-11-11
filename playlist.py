@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 PLAYLIST_DIR = '/var/lib/mpd/playlists/'
 
 class Playlist:

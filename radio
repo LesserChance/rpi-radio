@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 import RPi.GPIO as GPIO
 import sys, select, traceback, math
 import mpcplaylistplayer, staticplayer, playlist, textscroller, staticled, rotary
@@ -98,7 +98,7 @@ class Radio:
 
     def printChannelName(self):
         station = self.playlist.getChannelName(self.channel)
-        print station
+        print(station)
 
         if (self.text_scroller != None):
             self.text_scroller.stop()
