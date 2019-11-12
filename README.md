@@ -51,7 +51,7 @@ https://www.raspberrypi.org/documentation/installation/installing-images/mac.md
 1. `cd rpi-radio`
 
 ### Install
-1. `./install/install.sh`
+1. `sudo bash ./install/install.sh`
 1. optional reboot to confirm services come up automatically and cleanly from a reboot: `sudo shutdown -r now`
 
 ### Connect GPIO Pins
