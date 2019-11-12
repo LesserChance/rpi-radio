@@ -47,7 +47,7 @@ https://www.raspberrypi.org/documentation/installation/installing-images/mac.md
 1. `more ~/.ssh/id_rsa.pub` (copy to git)
 
 ### Checkout Repo
-1. `https://github.com/LesserChance/rpi-radio.git`
+1. `git clone https://github.com/LesserChance/rpi-radio.git`
 1. `cd rpi-radio`
 
 ### Install
